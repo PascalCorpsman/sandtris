@@ -7,3 +7,9 @@ Inspired by this youtube video https://www.youtube.com/shorts/aaCWkot8mIU i want
 ! This is a work in progress !
 
 ATM the sand emulation engine is running, the game itself is not yet playable.
+
+
+
+License
+
+See the license.md file located at https://github.com/PascalCorpsman/Software_Licenses/blob/main/license.md for details about the license.
