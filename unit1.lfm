@@ -1,0 +1,59 @@
+object Form1: TForm1
+  Left = 337
+  Height = 644
+  Top = 117
+  Width = 474
+  Caption = 'Form1'
+  ClientHeight = 644
+  ClientWidth = 474
+  KeyPreview = True
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
+  OnKeyPress = FormKeyPress
+  OnKeyUp = FormKeyUp
+  Position = poScreenCenter
+  LCLVersion = '2.3.0.0'
+  object OpenGLControl1: TOpenGLControl
+    Left = 8
+    Height = 576
+    Top = 56
+    Width = 320
+    OnMakeCurrent = OpenGLControl1MakeCurrent
+    OnPaint = OpenGLControl1Paint
+    OnResize = OpenGLControl1Resize
+  end
+  object Button1: TButton
+    Left = 336
+    Height = 25
+    Top = 128
+    Width = 75
+    Caption = 'Start'
+    OnClick = Button1Click
+    TabOrder = 1
+  end
+  object Label1: TLabel
+    Left = 8
+    Height = 45
+    Top = 8
+    Width = 320
+    Alignment = taRightJustify
+    AutoSize = False
+    Caption = 'Label1'
+    Font.Color = clWhite
+    Font.Height = -32
+    ParentFont = False
+  end
+  object PaintBox1: TPaintBox
+    Left = 336
+    Height = 64
+    Top = 56
+    Width = 128
+  end
+  object Timer1: TTimer
+    Interval = 16
+    OnTimer = Timer1Timer
+    Left = 48
+    Top = 64
+  end
+end
