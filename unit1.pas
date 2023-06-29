@@ -55,6 +55,7 @@ Type
   TForm1 = Class(TForm)
     Button1: TButton;
     Label1: TLabel;
+    Label3: TLabel;
     OpenGLControl1: TOpenGLControl;
     PaintBox1: TPaintBox;
     Timer1: TTimer;
@@ -62,7 +63,6 @@ Type
     Procedure FormCloseQuery(Sender: TObject; Var CanClose: Boolean);
     Procedure FormCreate(Sender: TObject);
     Procedure FormKeyDown(Sender: TObject; Var Key: Word; Shift: TShiftState);
-    Procedure FormKeyPress(Sender: TObject; Var Key: char);
     Procedure FormKeyUp(Sender: TObject; Var Key: Word; Shift: TShiftState);
     Procedure OpenGLControl1MakeCurrent(Sender: TObject; Var Allow: boolean);
     Procedure OpenGLControl1Paint(Sender: TObject);
@@ -115,7 +115,10 @@ End;
 
 Procedure TForm1.OnEndGame(sender: TObject);
 Begin
+  // TODO: den Text dieses Dialogs sieht man nicht weil wir noch mitten im OpenGL onpaint sind ..
+  showmessage('You reached: ' + IntToStr(SandTris.Points));
   Button1.Visible := true;
+  Init();
 End;
 
 Procedure TForm1.OnStartGame(sender: TObject);
@@ -131,6 +134,9 @@ Procedure TForm1.OnNextPreviewPiece(sender: TObject);
     PaintBox1.Canvas.Brush.Color := c;
     PaintBox1.Canvas.pen.Color := c;
     PaintBox1.Canvas.Rectangle(p.x * 4, p.Y * 4, p.x * 4 + 4, p.Y * 4 + 4);
+{$IFDEF Linux}
+    PaintBox1.Canvas.Pixels[p.x * 4 + 4 - 1, p.Y * 4 + 4 - 1] := c;
+{$ENDIF}
   End;
 
 Var
@@ -157,6 +163,8 @@ Begin
   Label1.caption := 'Please start';
   SandTris.Init;
   button1.Visible := true;
+  PaintBox1.Canvas.Brush.Color := clBlack;
+  PaintBox1.Canvas.Rectangle(-1, -1, PaintBox1.Width + 1, PaintBox1.Height + 1);
 End;
 
 Procedure TForm1.OpenGLControl1Paint(Sender: TObject);
@@ -267,17 +275,31 @@ Procedure TForm1.FormKeyDown(Sender: TObject; Var Key: Word; Shift: TShiftState
   );
 Begin
   If key = VK_ESCAPE Then close; // Boss Key
-
-End;
-
-Procedure TForm1.FormKeyPress(Sender: TObject; Var Key: char);
-Begin
-
+  If key = VK_LEFT Then Begin
+    SandTris.SetKey(-1, true);
+  End;
+  If key = VK_RIGHT Then Begin
+    SandTris.SetKey(1, true);
+  End;
+  If key = VK_SPACE Then Begin
+    SandTris.DropDown();
+  End;
 End;
 
 Procedure TForm1.FormKeyUp(Sender: TObject; Var Key: Word; Shift: TShiftState);
 Begin
-
+  If key = VK_LEFT Then Begin
+    SandTris.SetKey(-1, false);
+  End;
+  If key = VK_RIGHT Then Begin
+    SandTris.SetKey(1, false);
+  End;
+  If key = VK_UP Then Begin
+    SandTris.Turn(1);
+  End;
+  If key = VK_DOWN Then Begin
+    SandTris.Turn(-1);
+  End;
 End;
 
 Procedure TForm1.FormCloseQuery(Sender: TObject; Var CanClose: Boolean);

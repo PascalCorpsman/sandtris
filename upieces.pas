@@ -123,34 +123,32 @@ Const
     );
 
 Type
-  TPixel = Record
+  TVoxel = Record
     Location: TPoint;
     Color: TColor;
-  End;
-
-  TPixels = Record
-    Pixels: Array[0..4 * 64 - 1] Of TPixel; // 4 Teile a 64-Pixels
-    RotationPoint: TPoint;
     ColorIndex: integer; // Eine Farbe hat zwar Schattierungen, aber der ColorIndex ist immer der Gleiche
   End;
 
-Function GetRandomPiece(): TPixels;
+  TVoxels = Record
+    Pixels: Array[0..4 * 64 - 1] Of TVoxel; // 4 Teile a 64-Pixels
+    RotationPoint: TPoint;
+  End;
+
+Function GetRandomPiece(): TVoxels;
 
 Implementation
-
-Uses math;
 
 (*
  * Erstellt ein Zufälliges Teil, in einer Zufälligen Farbe
  *)
 
-Function GetRandomPiece(): TPixels;
+Function GetRandomPiece(): TVoxels;
 Var
   x, y, dx, dy, p, i, index: integer;
-  pc: Byte;
+  ColorIndex, pc: Byte;
 Begin
   p := random(length(Pieces));
-  result.ColorIndex := random(4);
+  ColorIndex := random(4);
   dx := 0;
   dy := 0;
   index := 0;
@@ -158,22 +156,24 @@ Begin
     For x := 0 To 7 Do Begin
       For y := 0 To 7 Do Begin
         pc := PieceSheme[p][x, y];
-        Case result.ColorIndex Of
+        Case ColorIndex Of
           0: result.Pixels[index].Color := Green[pc];
           1: result.Pixels[index].Color := Blue[pc];
           2: result.Pixels[index].Color := Yellow[pc];
           3: result.Pixels[index].Color := Red[pc];
         End;
+        result.Pixels[index].ColorIndex := ColorIndex;
         result.Pixels[index].Location.x := Pieces[p][i].x * 8 + x;
         result.Pixels[index].Location.Y := Pieces[p][i].Y * 8 + y;
-        dx := max(dx, Pieces[p][i].x * 8);
-        dy := max(dy, abs(Pieces[p][i].y * 8));
+        dx := dx + result.Pixels[index].Location.x;
+        dy := dy + result.Pixels[index].Location.y;
         inc(index);
       End;
     End;
   End;
-  result.RotationPoint.x := dx Div 2;
-  result.RotationPoint.Y := dy Div 2;
+  // Der Rotationspunkt ist = dem Schwerpunkt aller Voxels
+  result.RotationPoint.x := dx Div (4 * 64 * 2);
+  result.RotationPoint.Y := dy Div (4 * 64 * 2);
 End;
 
 

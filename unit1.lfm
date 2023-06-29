@@ -10,7 +10,6 @@ object Form1: TForm1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
-  OnKeyPress = FormKeyPress
   OnKeyUp = FormKeyUp
   Position = poScreenCenter
   LCLVersion = '2.3.0.0'
@@ -49,6 +48,15 @@ object Form1: TForm1
     Height = 64
     Top = 56
     Width = 128
+  end
+  object Label3: TLabel
+    Left = 336
+    Height = 80
+    Top = 557
+    Width = 112
+    Caption = 'Keys:'#13#10'    up, down = turn'#13#10'    left right = move'#13#10'    SPACE = drop'#13#10'    ESC = exit'
+    Font.Color = clGray
+    ParentFont = False
   end
   object Timer1: TTimer
     Interval = 16
