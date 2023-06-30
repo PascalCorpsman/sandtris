@@ -16,7 +16,7 @@ This program still has lots of ways to be improved but is playable and brings jo
 
 - Install LazOpenGLContext package into Lazarus IDE.
 - Download dglOpenGL.pas from here ( https://github.com/saschawillems/dglopengl )
-- on some Linux systems you me need a : sudo apt-get install freeglut3-dev   
+- on some Linux systems you may need a : sudo apt-get install freeglut3-dev   
 
 License
 
