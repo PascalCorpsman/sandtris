@@ -7,9 +7,16 @@ Inspired by this youtube video https://www.youtube.com/shorts/aaCWkot8mIU i want
 Implemented Features:
  - 4 Colors
  - 7 different pieces
- - Highscorer calculations (only shown not stored)
+ - Highscore calculations (only shown not stored)
 
-This example still has lots of ways to be improved but is still playable ;).
+This program still has lots of ways to be improved but is playable and brings joy *g*.
+
+
+## What needs to be done to compile the game:
+
+- Install LazOpenGLContext package into Lazarus IDE.
+- Download dglOpenGL.pas from here ( https://github.com/saschawillems/dglopengl )
+- on some Linux systems you me need a : sudo apt-get install freeglut3-dev   
 
 License
 
