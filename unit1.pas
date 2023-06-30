@@ -249,11 +249,7 @@ Begin
   (*
    * History: 0.01 = Initial version
    *
-   * Known Bugs: die "Hoch / Runter" funktion zum Teil drehen fühlt sich "Hackelig" an, aber funktioniert..
-   * Missing Feature: 
-   *       - Wenn die Space bar gedrückt wird sollte das Spielfeld kurz wackeln
-   *       - Einen Rahmen fürs Spielfeld Rendern
-   * 
+   * Known Bugs: On Linux the Highscreen is not readable
    *)
   Caption := 'Sandtris ver. 0.01';
   Randomize;
@@ -294,6 +290,12 @@ Begin
   If key = vK_P Then Begin
     SandTris.TogglePause;
   End;
+  If key = VK_UP Then Begin
+    SandTris.Turn(1);
+  End;
+  If key = VK_DOWN Then Begin
+    SandTris.Turn(-1);
+  End;
 End;
 
 Procedure TForm1.FormKeyUp(Sender: TObject; Var Key: Word; Shift: TShiftState);
@@ -303,12 +305,6 @@ Begin
   End;
   If key = VK_RIGHT Then Begin
     SandTris.SetKey(1, false);
-  End;
-  If key = VK_UP Then Begin
-    SandTris.Turn(1);
-  End;
-  If key = VK_DOWN Then Begin
-    SandTris.Turn(-1);
   End;
 End;
 
