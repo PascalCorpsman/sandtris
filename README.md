@@ -1,12 +1,15 @@
 # Sandtris, TETRIS Clone with sand simulation engine
 
-! This is a work in progress !
-
 Inspired by this youtube video https://www.youtube.com/shorts/aaCWkot8mIU i wanted to have my own TETRIS clone with this special touch ;).
 
 ![](preview.png)
 
-ATM the sand emulation engine is running, the game itself is not yet playable.
+Implemented Features:
+ - 4 Colors
+ - 7 different pieces
+ - Highscorer calculations (only shown not stored)
+
+This example still has lots of ways to be improved but is still playable ;).
 
 License
 
