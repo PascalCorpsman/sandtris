@@ -119,6 +119,7 @@ Begin
   showmessage('You reached: ' + IntToStr(SandTris.Points));
   Button1.Visible := true;
   Init();
+  Button1.SetFocus;
 End;
 
 Procedure TForm1.OnStartGame(sender: TObject);
@@ -247,6 +248,12 @@ Procedure TForm1.FormCreate(Sender: TObject);
 Begin
   (*
    * History: 0.01 = Initial version
+   *
+   * Known Bugs: die "Hoch / Runter" funktion zum Teil drehen fühlt sich "Hackelig" an, aber funktioniert..
+   * Missing Feature: 
+   *       - Wenn die Space bar gedrückt wird sollte das Spielfeld kurz wackeln
+   *       - Einen Rahmen fürs Spielfeld Rendern
+   * 
    *)
   Caption := 'Sandtris ver. 0.01';
   Randomize;
@@ -283,6 +290,9 @@ Begin
   End;
   If key = VK_SPACE Then Begin
     SandTris.DropDown();
+  End;
+  If key = vK_P Then Begin
+    SandTris.TogglePause;
   End;
 End;
 

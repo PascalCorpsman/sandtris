@@ -51,10 +51,10 @@ object Form1: TForm1
   end
   object Label3: TLabel
     Left = 336
-    Height = 80
-    Top = 557
-    Width = 112
-    Caption = 'Keys:'#13#10'    up, down = turn'#13#10'    left right = move'#13#10'    SPACE = drop'#13#10'    ESC = exit'
+    Height = 90
+    Top = 542
+    Width = 119
+    Caption = 'Keys:'#13#10'    UP, DOWN = turn'#13#10'    LEFT, RIGHT = move'#13#10'    SPACE = drop'#13#10'    ESC = exit'#13#10'    P = toggle pause'
     Font.Color = clGray
     ParentFont = False
   end

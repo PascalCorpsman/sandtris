@@ -28,8 +28,12 @@ Const
 Type
 
   TGameState = (
-    gsPause // Black Screen
+    gsidle // Black Screen
     , gsGaming // Das Spiel Läuft
+    , gsFlashPoints // Die gerade "Geschaffte" Fläche / Linie wird angezeigt
+    , gsPauseGaming
+    , gsPauseFlashPoints
+
     );
 
   TPixelColor = Record
@@ -58,12 +62,16 @@ Type
 
   TSandTris = Class
   private
+    fNeedNextPeace: Boolean; // Wenn ein "Fallendes" Teil, ohne den Boden zu berühren ein LineDelete auslöst, dann muss nach der Animation ein neues Teil ausgelöst werden
+    fFlashIndex: integer;
     fFifo: TCoordFifo;
     fKeys: Array[-1..1] Of Boolean; // Puffer für Links / Rechts Taste
     fGameState: TGameState;
     fArrea: Array Of Array Of TPixelData; // Das Spielfeld der einzelnen "Sandkörnchen"
     fRotationPoint: Tpoint;
-    LastMoveControllableTime,
+    LastPauseTime,
+      LastFlashTime,
+      LastMoveControllableTime,
       LastMovePixelDataTime: UInt64; // Der Letzte Zeitpunkt an dem "moveData" Aktiv war
 
 
@@ -96,6 +104,7 @@ Type
 
     Procedure Init(); // Resets the whole game to its init state = Blank Screen
     Procedure Start(); // Start a new Game
+    Procedure TogglePause();
 
     Procedure Turn(Dir: integer); // Dreht den Aktuellen Block 1 = 90 Grad gegen Uhrzeiger, -1 = 90 mit Uhrzeiger
     Procedure SetKey(Dir: integer; State: Boolean); // Dir = links, rechts, State = An / Aus
@@ -109,6 +118,7 @@ Uses dglOpenGL;
 Const
   GravityRefreshRate = 25; // in ms 25
   MoveRefreshRate = 15;
+  FlashTime = 250;
 
   { TSandTris }
 
@@ -128,7 +138,7 @@ Begin
       fArrea[i, j].occupied := false;
     End;
   End;
-  fGameState := gsPause;
+  fGameState := gsidle;
 End;
 
 Destructor TSandTris.Destroy();
@@ -203,27 +213,60 @@ Begin
     For iter := 0 To iterations - 1 Do Begin
       fRotationPoint.y := fRotationPoint.y + 1; // Der "Drehpunkt" des fällt ja auch mit ;)
       // Das Nach Links und Rechts "Gleiten"
+      // Variante 1 Die Pixel werden unten "rausgepresst" die Pyramiden entstehen dadurch von unten nach oben
       For i := 0 To WorldWidth - 1 Do Begin
         If fArrea[i, WorldHeight - 1].occupied Then Begin
           For j := WorldHeight - 2 Downto 1 Do Begin
-            If (Not fArrea[i, j - 1].occupied) Then Begin
-              // Wir haben einen Kandidaten für Links / Rechts Flow
-              If (i > 0) And (Not fArrea[i - 1, j].occupied) And (Not fArrea[i - 1, j + 1].occupied) Then Begin
+            If (fArrea[i, j + 1].Occupied) And (fArrea[i, j - 1].Occupied) Then Begin
+              If (i > 0) And (Not (fArrea[i - 1, j].Occupied)) Then Begin
                 fArrea[i - 1, j] := fArrea[i, j];
-                fArrea[i, j].occupied := false;
+                For k := j Downto 1 Do Begin
+                  fArrea[i, k] := fArrea[i, k - 1];
+                  If Not fArrea[i, k - 1].occupied Then break;
+                End;
+                break;
               End
               Else Begin
-                If (i < WorldWidth - 2) And (Not fArrea[i + 1, j].occupied) And (Not fArrea[i + 1, j + 1].occupied) Then Begin
-                  //fArrea[i, j].Pixel.Moved := true;
+                If (i < WorldWidth - 1) And (Not (fArrea[i + 1, j].Occupied)) Then Begin
                   fArrea[i + 1, j] := fArrea[i, j];
-                  fArrea[i, j].occupied := false;
-                End;
+                  For k := j Downto 1 Do Begin
+                    fArrea[i, k] := fArrea[i, k - 1];
+                    If Not fArrea[i, k - 1].occupied Then break;
+                  End;
+                  break;
+                End
               End;
+            End;
+            If (Not fArrea[i, j - 1].occupied) Then Begin
               break;
             End;
           End;
         End;
       End;
+      // Ende Variante 1
+      // Variante 2. Die Pixel gleiten oben Ab -> Die Pyramiden entstehen von oben nach Unten
+      //For i := 0 To WorldWidth - 1 Do Begin
+      //  If fArrea[i, WorldHeight - 1].occupied Then Begin
+      //    For j := WorldHeight - 2 Downto 1 Do Begin
+      //      If (Not fArrea[i, j - 1].occupied) Then Begin
+      //        // Wir haben einen Kandidaten für Links / Rechts Flow
+      //        If (i > 0) And (Not fArrea[i - 1, j].occupied) And (Not fArrea[i - 1, j + 1].occupied) Then Begin
+      //          fArrea[i - 1, j] := fArrea[i, j];
+      //          fArrea[i, j].occupied := false;
+      //        End
+      //        Else Begin
+      //          If (i < WorldWidth - 1) And (Not fArrea[i + 1, j].occupied) And (Not fArrea[i + 1, j + 1].occupied) Then Begin
+      //            fArrea[i + 1, j] := fArrea[i, j];
+      //            fArrea[i, j].occupied := false;
+      //          End;
+      //        End;
+      //        break;
+      //      End;
+      //    End;
+      //  End;
+      //End;
+      // Ende Variante 2
+
       // Die Schwerkraft
       For j := WorldHeight - 2 Downto 0 Do Begin
         For i := 0 To WorldWidth - 1 Do Begin
@@ -258,7 +301,6 @@ Begin
      * Eigentlich sollte der Check innerhalb der Iter Schleife sein, aber da der Check doch Recht Rechenaufwändig
      * ist, machen wir den nach den "Iterations", der User sollte den Unterschied eh nicht sehen ...
      *)
-    // TODO: Check for Colors to be "Cleared"
     CheckForFinishedRows;
   End;
 End;
@@ -282,6 +324,7 @@ Begin
     For iter := 0 To iterations - 1 Do Begin
       // 1. Raus schneiden des Teiles
       If Not ExtractPieceFromField(Piece) Then exit;
+      fRotationPoint.x := fRotationPoint.x + dx;
       // 2. Verschoben einfügen
       For i := 0 To high(Piece) Do Begin
         nx := Piece[i].Location.X + dx;
@@ -306,18 +349,24 @@ End;
 
 Procedure TSandTris.Render;
 Var
-  i, j: Integer;
+  i, j, dt, ii: integer;
+  UpdatePoints: Boolean;
 Begin
   Case fGameState Of
-    gsPause: Begin
+    gsidle: Begin
         // -- Nichts
       End;
-    gsGaming: Begin
-        MovePeace();
-        // 1. Move all Pixels
-        MovePixelData();
-
-
+    gsPauseGaming,
+      gsGaming: Begin
+        If fGameState = gsGaming Then Begin
+          If fNeedNextPeace Then Begin
+            fNeedNextPeace := false;
+            PlaceNextPeace;
+          End;
+          MovePeace();
+          // 1. Move all Pixels
+          MovePixelData();
+        End;
         // 2. Render them
         glbegin(GL_POINTS);
         For i := 0 To WorldWidth - 1 Do Begin
@@ -330,12 +379,54 @@ Begin
         End;
         glEnd;
       End;
+    gsPauseFlashPoints,
+      gsFlashPoints: Begin
+        If fGameState = gsFlashPoints Then Begin
+          dt := GetTickCount64 - LastFlashTime;
+          ii := (dt * WorldWidth) Div FlashTime; // Für die Clear Animation von Links nach Rechts ;)
+        End
+        Else Begin
+          ii := -1;
+        End;
+        // 2. Render them
+        UpdatePoints := false;
+        glbegin(GL_POINTS);
+        For i := 0 To WorldWidth - 1 Do Begin
+          For j := 0 To WorldHeight - 1 Do Begin
+            If fArrea[i, j].occupied Then Begin
+              If fFlashIndex = fArrea[i, j].FloodFillIndex Then Begin
+                glcolor3f(1, 1, 1);
+                If i <= ii Then Begin
+                  If fArrea[i, j].Controllable Then fNeedNextPeace := true;
+                  fArrea[i, j].occupied := false;
+                  inc(Points);
+                  UpdatePoints := true;
+                End;
+              End
+              Else Begin
+                glcolor3f(fArrea[i, j].Color.R, fArrea[i, j].Color.G, fArrea[i, j].Color.B);
+              End;
+              glVertex2d(i, j);
+            End;
+          End;
+        End;
+        glEnd;
+        If UpdatePoints Then Begin
+          OnPointsEvent(self);
+        End;
+        // Die "Flashzeit" ist abgelaufen
+        If dt >= FlashTime Then Begin
+          LastMoveControllableTime := LastMoveControllableTime + dt;
+          LastMovePixelDataTime := LastMovePixelDataTime + dt;
+          fGameState := gsGaming;
+        End;
+      End;
   End;
 End;
 
 Procedure TSandTris.Init;
 Begin
-  fGameState := gsPause;
+  fGameState := gsidle;
 End;
 
 Procedure TSandTris.Start;
@@ -343,6 +434,7 @@ Var
   i, j: Integer;
 Begin
   Points := 0;
+  fNeedNextPeace := false;
   // Clear Game Field
   For i := 0 To WorldWidth - 1 Do Begin
     For j := 0 To WorldHeight - 1 Do Begin
@@ -362,11 +454,39 @@ Begin
   End;
 End;
 
+Procedure TSandTris.TogglePause();
+Var
+  dt: QWord;
+Begin
+  Case fGameState Of
+    gsGaming: Begin
+        LastPauseTime := GetTickCount64;
+        fGameState := gsPauseGaming;
+      End;
+    gsFlashPoints: Begin
+        LastPauseTime := GetTickCount64;
+        fGameState := gsPauseFlashPoints;
+      End;
+    gsPauseGaming: Begin
+        fGameState := gsGaming;
+        dt := GetTickCount64 - LastPauseTime;
+        LastMoveControllableTime := LastMoveControllableTime + dt;
+        LastMovePixelDataTime := LastMovePixelDataTime + dt;
+      End;
+    gsPauseFlashPoints: Begin
+        fGameState := gsFlashPoints;
+        dt := GetTickCount64 - LastPauseTime;
+        LastFlashTime := LastFlashTime + dt;
+      End;
+  End;
+End;
+
 Procedure TSandTris.Turn(Dir: integer);
 Var
   Piece: TPiece;
   i, nx, ny: Integer;
 Begin
+  If fGameState <> gsGaming Then exit;
   // 1. Raus schneiden des Teiles
   If Not ExtractPieceFromField(Piece) Then exit;
   // 2. Gedreht einfügen
@@ -400,6 +520,7 @@ Var
   nx, ny: LongInt;
   i, j: Integer;
 Begin
+  If fGameState <> gsGaming Then exit;
   While ExtractPieceFromField(Piece) Do Begin
     For i := 0 To high(Piece) Do Begin
       nx := Piece[i].Location.X;
@@ -467,12 +588,25 @@ Begin
 End;
 
 Procedure TSandTris.CheckForFinishedRows;
+  Procedure Check(x1, y1, x2, y2: integer);
+  Begin
+    If // Boundary Check
+    (x2 >= 0) And (x2 < WorldWidth) And (y2 >= 0) And (y2 < WorldHeight) And
+      // Belegt und selbe Farbe ?
+    fArrea[x2, y2].Occupied And (fArrea[x1, y1].Colorindex = fArrea[x2, y2].Colorindex) And
+      // Noch nicht Besucht
+    (fArrea[x2, y2].FloodFillIndex = -1)
+      Then Begin
+      ffifo.push(point(x2, y2));
+    End;
+  End;
+
 Var
   i, j: Integer;
   Found: Boolean;
   p: TPoint;
 Begin
-  // TODO: Implementieren
+  fFlashIndex := -1;
   // 1. Alle Alten Floodfill Themen Löschen
   For i := 0 To WorldWidth - 1 Do Begin
     For j := 0 To WorldHeight - 1 Do Begin
@@ -487,17 +621,31 @@ Begin
       Found := false;
       While Not fFifo.isempty Do Begin
         p := fFifo.Pop;
+        // Der Pixel ist Belegt und noch nicht betrachtet worden !
         If fArrea[p.x, p.y].Occupied And (fArrea[p.x, p.y].FloodFillIndex = -1) Then Begin
-          hier gehts weiter
+          fArrea[p.x, p.y].FloodFillIndex := j;
+          If p.x = WorldWidth - 1 Then Begin
+            // Es hat geklappt, aber Dennoch müssen alle Besucht werden !
+            Found := true;
+            fFlashIndex := j;
+            fGameState := gsFlashPoints;
+            LastFlashTime := GetTickCount64;
+          End;
+          Check(p.x, p.y, p.x + 1, p.y);
+          Check(p.x, p.y, p.x - 1, p.y);
+          Check(p.x, p.y, p.x, p.y + 1);
+          Check(p.x, p.y, p.x, p.y - 1);
+          // TODO: Diagonalen auch ?
         End;
       End;
+      If Found Then break;
     End;
   End;
 End;
 
 Procedure TSandTris.EndGame;
 Begin
-  fGameState := gsPause;
+  fGameState := gsidle;
   OnEndGameEvent(self);
 End;
 
