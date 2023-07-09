@@ -102,7 +102,7 @@ Begin
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix(); // Store old Modelview Matrix
   glLoadIdentity(); // Reset The Modelview Matrix
-  glPointSize(4);
+  glPointSize(Scale96ToForm(4));
 End;
 
 Procedure TForm1.Exit2d;
@@ -134,9 +134,9 @@ Procedure TForm1.OnNextPreviewPiece(sender: TObject);
   Begin
     PaintBox1.Canvas.Brush.Color := c;
     PaintBox1.Canvas.pen.Color := c;
-    PaintBox1.Canvas.Rectangle(p.x * 4, p.Y * 4, p.x * 4 + 4, p.Y * 4 + 4);
+    PaintBox1.Canvas.Rectangle(Scale96ToForm(p.x * 4), Scale96ToForm(p.Y * 4), Scale96ToForm(p.x * 4 + 4), Scale96ToForm(p.Y * 4 + 4));
 {$IFDEF Linux}
-    PaintBox1.Canvas.Pixels[p.x * 4 + 4 - 1, p.Y * 4 + 4 - 1] := c;
+    PaintBox1.Canvas.Pixels[Scale96ToForm(p.x * 4 + 4 - 1), Scale96ToForm(p.Y * 4 + 4 - 1)] := c;
 {$ENDIF}
   End;
 
@@ -248,8 +248,10 @@ Procedure TForm1.FormCreate(Sender: TObject);
 Begin
   (*
    * History: 0.01 = Initial version
+   *          0.02 = Fix DPI Scaling
    *
-   * Known Bugs: On Linux the Highscreen is not readable
+   * Known Bugs: - On Linux the Highscreen is not readable
+   *             - The very first previewed piece is not shown (Linux and Windows)
    *)
   Caption := 'Sandtris ver. 0.01';
   Randomize;
@@ -270,8 +272,8 @@ Begin
   Generell sollte die Interval Zahl also dynamisch zum Rechenaufwand, mindestens aber immer 17 sein.
   *)
   Timer1.Interval := 17;
-  OpenGLControl1.Width := WorldWidth * 4;
-  OpenGLControl1.Height := WorldHeight * 4;
+  OpenGLControl1.Width := Scale96ToForm(WorldWidth * 4);
+  OpenGLControl1.Height := Scale96ToForm(WorldHeight * 4);
 End;
 
 Procedure TForm1.FormKeyDown(Sender: TObject; Var Key: Word; Shift: TShiftState
