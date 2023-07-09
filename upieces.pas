@@ -56,15 +56,19 @@ Const
     );
 
   // ColorShading per Piece
+  (*
+   * !! Attention !!
+   * x and y are "swapped" here so access by [index][y,x] to get the correct results !
+   *)
   PieceSheme: Array[0..6] Of Array[0..7, 0..7] Of byte =
   (
     ((0, 0, 0, 0, 0, 0, 0, 0), // XXXX
-    (0, 2, 2, 2, 1, 2, 2, 0), //
-    (0, 1, 2, 2, 2, 2, 2, 0),
-    (0, 2, 2, 1, 2, 2, 2, 0),
-    (0, 2, 2, 2, 2, 2, 1, 0),
-    (0, 2, 1, 2, 2, 2, 2, 0),
-    (0, 2, 2, 2, 1, 2, 2, 0),
+    (2, 2, 2, 2, 1, 2, 2, 2), //
+    (2, 1, 2, 2, 2, 2, 2, 2),
+    (2, 2, 2, 1, 2, 2, 2, 2),
+    (2, 2, 2, 2, 2, 2, 1, 2),
+    (2, 2, 1, 2, 2, 2, 2, 2),
+    (2, 2, 2, 2, 1, 2, 2, 2),
     (0, 0, 0, 0, 0, 0, 0, 0)),
 
     ((0, 0, 0, 0, 0, 0, 0, 0), //   X
@@ -155,7 +159,11 @@ Begin
   For i := 0 To 3 Do Begin
     For x := 0 To 7 Do Begin
       For y := 0 To 7 Do Begin
-        pc := PieceSheme[p][x, y];
+        // x and y are swapped in the const !
+        pc := PieceSheme[p][y, x];
+        // Hack Piece 0 to look nice as its texture is per peace and not per block
+        If (p = 0) And (i = 0) And (x = 0) And (y In [1..6]) Then pc := 0;
+        If (p = 0) And (i = 3) And (x = 7) And (y In [1..6]) Then pc := 0;
         Case ColorIndex Of
           0: result.Pixels[index].Color := Green[pc];
           1: result.Pixels[index].Color := Blue[pc];

@@ -249,11 +249,12 @@ Begin
   (*
    * History: 0.01 = Initial version
    *          0.02 = Fix DPI Scaling
+   *          0.03 = improve texture of straight block
    *
    * Known Bugs: - On Linux the Highscreen is not readable
    *             - The very first previewed piece is not shown (Linux and Windows)
    *)
-  Caption := 'Sandtris ver. 0.01';
+  Caption := 'Sandtris ver. 0.03';
   Randomize;
   Color := clBlack;
   Constraints.MinHeight := Height;
