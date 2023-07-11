@@ -11,6 +11,8 @@ Implemented Features:
 
 This program still has lots of ways to be improved but is playable and brings joy *g*.
 
+## What do i need to play the game
+On Linux or Windows download the executable from the bin folder and start playing. On all other operating systems you need to compile the code by yourselfe.
 
 ## What needs to be done to compile the game:
 
