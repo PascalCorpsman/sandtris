@@ -224,7 +224,7 @@ Var
   List: TItemList;
 Begin
   // Show Highscore
-  list := Highscore.Show(true);
+  list := Highscore.Show(false);
   form2.LoadHighscore(List);
   form2.ShowModal;
 End;

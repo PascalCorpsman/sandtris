@@ -65,8 +65,8 @@ Begin
     label1.caption := '';
     label2.Caption := '';
     For i := 0 To high(List) Do Begin
-      label1.caption := List[i].Name + LineEnding;
-      label2.caption := inttostr(List[i].Points) + LineEnding;
+      label1.caption := label1.caption + List[i].Name + LineEnding;
+      label2.caption := label2.caption + inttostr(List[i].Points) + LineEnding;
     End;
   End;
 End;
