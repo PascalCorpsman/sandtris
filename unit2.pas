@@ -12,30 +12,64 @@
 (*               source file of the project.                                  *)
 (*                                                                            *)
 (******************************************************************************)
-program sandtris;
+Unit Unit2;
 
-{$mode objfpc}{$H+}
+{$MODE ObjFPC}{$H+}
 
-uses
-  {$IFDEF UNIX}
-  cthreads,
-  {$ENDIF}
-  {$IFDEF HASAMIGA}
-  athreads,
-  {$ENDIF}
-  Interfaces, // this includes the LCL widgetset
-  Forms, lazopenglcontext, Unit1, dglOpenGL, ufifo, uHighscoreEngine, usandtris,
-  upieces, Unit2
-  { you can add units after this };
+Interface
 
-{$R *.res}
+Uses
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  uHighscoreEngine;
 
-begin
-  RequireDerivedFormResource:=True;
-  Application.Scaled:=True;
-  Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
-  Application.CreateForm(TForm2, Form2);
-  Application.Run;
-end.
+Type
+
+  { TForm2 }
+
+  TForm2 = Class(TForm)
+    Button1: TButton;
+    Label1: TLabel;
+    Label2: TLabel;
+    Procedure FormCreate(Sender: TObject);
+  private
+
+  public
+
+    Procedure LoadHighscore(Const List: TItemList);
+  End;
+
+Var
+  Form2: TForm2;
+
+Implementation
+
+{$R *.lfm}
+
+{ TForm2 }
+
+Procedure TForm2.FormCreate(Sender: TObject);
+Begin
+  caption := 'Highscore';
+  Color := clBlack;
+End;
+
+Procedure TForm2.LoadHighscore(Const List: TItemList);
+Var
+  i: Integer;
+Begin
+  If high(list) = -1 Then Begin
+    label1.caption := '-';
+    label2.Caption := '-';
+  End
+  Else Begin
+    label1.caption := '';
+    label2.Caption := '';
+    For i := 0 To high(List) Do Begin
+      label1.caption := List[i].Name + LineEnding;
+      label2.caption := inttostr(List[i].Points) + LineEnding;
+    End;
+  End;
+End;
+
+End.
 

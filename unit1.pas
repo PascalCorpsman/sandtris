@@ -38,7 +38,7 @@ Interface
 
 Uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  OpenGLContext,
+  Buttons, OpenGLContext,
   (*
   * Kommt ein Linkerfehler wegen OpenGL dann: sudo apt-get install freeglut3-dev
   *)
@@ -46,6 +46,7 @@ Uses
   //, uopengl_graphikengine // Die OpenGLGraphikengine ist eine Eigenproduktion von www.Corpsman.de, und kann getrennt geladen werden.
   , usandtris
   , upieces
+  , uHighscoreEngine
   ;
 
 Type
@@ -54,11 +55,14 @@ Type
 
   TForm1 = Class(TForm)
     Button1: TButton;
+    ImageList1: TImageList;
     Label1: TLabel;
     Label3: TLabel;
     OpenGLControl1: TOpenGLControl;
     PaintBox1: TPaintBox;
+    SpeedButton1: TSpeedButton;
     Timer1: TTimer;
+    Timer2: TTimer;
     Procedure Button1Click(Sender: TObject);
     Procedure FormCloseQuery(Sender: TObject; Var CanClose: Boolean);
     Procedure FormCreate(Sender: TObject);
@@ -67,9 +71,12 @@ Type
     Procedure OpenGLControl1MakeCurrent(Sender: TObject; Var Allow: boolean);
     Procedure OpenGLControl1Paint(Sender: TObject);
     Procedure OpenGLControl1Resize(Sender: TObject);
+    Procedure SpeedButton1Click(Sender: TObject);
     Procedure Timer1Timer(Sender: TObject);
+    Procedure Timer2Timer(Sender: TObject);
   private
     SandTris: TSandTris;
+    Highscore: THighscoreEngine;
     Procedure Go2d();
     Procedure Exit2d();
     Procedure OnEndGame(sender: TObject);
@@ -88,7 +95,7 @@ Implementation
 
 {$R *.lfm}
 
-Uses LCLType;
+Uses LCLType, Unit2;
 
 { TForm1 }
 
@@ -113,13 +120,33 @@ Begin
   glPopMatrix(); // Restore old Projection Matrix
 End;
 
-Procedure TForm1.OnEndGame(sender: TObject);
+
+Procedure TForm1.Timer2Timer(Sender: TObject);
+Var
+  s: String;
 Begin
+  // We do this only one time
+  timer2.enabled := false;
   // TODO: den Text dieses Dialogs sieht man nicht weil wir noch mitten im OpenGL onpaint sind ..
-  showmessage('You reached: ' + IntToStr(SandTris.Points));
+  //showmessage('You reached: ' + IntToStr(SandTris.Points));
+  s := InputBox('Results', 'You reached: ' + IntToStr(SandTris.Points) + ' points, please enter your name for highscores.', 'Anonymos');
+  If s <> '' Then Begin
+    Highscore.Add(s, SandTris.Points);
+    Highscore.Save;
+    SpeedButton1Click(Nil);
+  End;
   Button1.Visible := true;
   Init();
   Button1.SetFocus;
+End;
+
+Procedure TForm1.OnEndGame(sender: TObject);
+Begin
+  // This is not elegant but easy
+  // and needed to decouple the OnRender routine from the showmessage routine
+  // which is needed on Linux systems to be able to actually display a messages
+  // Content
+  timer2.enabled := true;
 End;
 
 Procedure TForm1.OnStartGame(sender: TObject);
@@ -192,6 +219,16 @@ Begin
   End;
 End;
 
+Procedure TForm1.SpeedButton1Click(Sender: TObject);
+Var
+  List: TItemList;
+Begin
+  // Show Highscore
+  list := Highscore.Show(true);
+  form2.LoadHighscore(List);
+  form2.ShowModal;
+End;
+
 Procedure TForm1.Timer1Timer(Sender: TObject);
 {$IFDEF DebuggMode}
 Var
@@ -250,17 +287,20 @@ Begin
    * History: 0.01 = Initial version
    *          0.02 = Fix DPI Scaling
    *          0.03 = improve texture of straight block
+   *          0.04 = Add Simple Highscore Engine
    *
    * Known Bugs: - On Linux the Highscreen is not readable
    *             - The very first previewed piece is not shown (Linux and Windows)
    *)
-  Caption := 'Sandtris ver. 0.03';
+  Caption := 'Sandtris ver. 0.04';
   Randomize;
   Color := clBlack;
   Constraints.MinHeight := Height;
   Constraints.MaxHeight := Height;
   Constraints.MinWidth := Width;
   Constraints.MaxWidth := Width;
+  Highscore := THighscoreEngine.Create('Highscores.dat', 'This should be a good password, not such a lame text.', 10);
+  Highscore.InsertAlways := true;
   // Init dglOpenGL.pas , Teil 1
   If Not InitOpenGl Then Begin
     showmessage('Error, could not init dglOpenGL.pas');
@@ -314,6 +354,7 @@ End;
 Procedure TForm1.FormCloseQuery(Sender: TObject; Var CanClose: Boolean);
 Begin
   Initialized := false;
+  Highscore.free;
   SandTris.Free;
 End;
 

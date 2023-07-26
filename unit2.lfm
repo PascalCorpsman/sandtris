@@ -1,0 +1,42 @@
+object Form2: TForm2
+  Left = 353
+  Height = 528
+  Top = 124
+  Width = 458
+  Caption = 'Form2'
+  ClientHeight = 528
+  ClientWidth = 458
+  OnCreate = FormCreate
+  Position = poScreenCenter
+  LCLVersion = '2.3.0.0'
+  object Label1: TLabel
+    Left = 16
+    Height = 450
+    Top = 16
+    Width = 92
+    Caption = 'Label1'#13#10'2'#13#10'3'#13#10'4'#13#10'5'#13#10'6'#13#10'7'#13#10'8'#13#10'9'#13#10'10'
+    Font.Color = clGray
+    Font.Height = -32
+    ParentFont = False
+  end
+  object Label2: TLabel
+    Left = 344
+    Height = 45
+    Top = 24
+    Width = 92
+    Alignment = taRightJustify
+    Caption = 'Label2'
+    Font.Color = clGray
+    Font.Height = -32
+    ParentFont = False
+  end
+  object Button1: TButton
+    Left = 16
+    Height = 25
+    Top = 488
+    Width = 424
+    Caption = 'OK'
+    ModalResult = 1
+    TabOrder = 0
+  end
+end

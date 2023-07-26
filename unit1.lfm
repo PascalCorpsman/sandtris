@@ -51,17 +51,52 @@ object Form1: TForm1
   end
   object Label3: TLabel
     Left = 336
-    Height = 96
+    Height = 90
     Top = 542
-    Width = 132
+    Width = 119
     Caption = 'Keys:'#13#10'    UP, DOWN = turn'#13#10'    LEFT, RIGHT = move'#13#10'    SPACE = drop'#13#10'    ESC = exit'#13#10'    P = toggle pause'
     Font.Color = clGray
     ParentFont = False
+  end
+  object SpeedButton1: TSpeedButton
+    Left = 376
+    Height = 72
+    Top = 456
+    Width = 72
+    Images = ImageList1
+    ImageIndex = 0
+    Transparent = False
+    OnClick = SpeedButton1Click
   end
   object Timer1: TTimer
     Interval = 16
     OnTimer = Timer1Timer
     Left = 48
     Top = 64
+  end
+  object Timer2: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = Timer2Timer
+    Left = 128
+    Top = 64
+  end
+  object ImageList1: TImageList
+    Height = 64
+    Width = 64
+    Left = 392
+    Top = 264
+    Bitmap = {
+      4C7A010000004000000040000000240100000000000078DAEDDB3B12C2300C45
+      512FDD4BCBCE0C254546C8B6FE7A857ACE25240C58638C353026F33C0F6BBA79
+      2BF59032676BA1ED8EDAC1DA1DA583B7DBB383AD6B9163DDC0FE7DE5FBB51BF8
+      5CD77B7EAD067E9FEB7DBF7403DFFBDA995FAA81FF7DFDDC7FDB20C673EDCE7F
+      DA20CE73FDDE7FD2A0B3DFCC36273992FE9D069DFDA6D7B6B19FD3A0B3DFFCDE
+      E6E0A71AC0DFD7EFF26C77F2BF35805FD8B61639F0C7F1AB5CDBC1FDBF0DE087
+      1F7EF8E1879F33F3FBFAA9811FFE4CFEDD0615FC37DFFFE187BF9A7FA74176FF
+      EDEF7FF0D7F4731B64F64BFCFF53D9CF6990D52FF5FF6F75FFBF0619FD92E73F
+      3AF8A906D9FCD267C032F935CE0066F16B9D01CDE0D73C031CDDAF7D063CB2BF
+      E3EE47F51D10EC01610F0C7B807D7741B1FF8CD19A0F5534D163
+    }
   end
 end
